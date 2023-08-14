@@ -1,19 +1,35 @@
-
 ###
 library(shiny)
 library(colourpicker)
 library(colorBlindness)
 library(ggplot2)
+library(terra)
+library(KernSmooth)
+library(tidyterra)
+library(grid)
+library(jpeg)
 
-library(shiny)
-library(colourpicker)
-library(colorBlindness)
-library(ggplot2)
+
+environ <- function(d, x, bw, mini, maxi) {
+  cox <- cbind(runif(x, min = 1, max = d), runif(x, min = 1, max = d))
+  smooth <- bkde2D(cox, bandwidth = c(bw, bw), gridsize = c(d, d), range.x = list(c(1, d), c(1, d)))
+  layer <- smooth$fhat
+  minl <- min(layer)
+  maxl <- max(layer)
+  layer <- ((layer - minl) / (maxl - minl)) * (maxi - mini) + mini
+  return(layer)
+}
+
+
+d <- max(60, 60)
+rng <- (d + 1):(2 * d)
+
 
 ui <- fluidPage(
-  titlePanel("🌈 Color Quest"),
+  titlePanel("ðŸŒˆ Color Quest"),
   h3("Version 1.0"),
- 
+  p(textOutput("counter")),
+  
   div(class = "container", 
       sidebarLayout(
         sidebarPanel(
@@ -22,26 +38,30 @@ ui <- fluidPage(
           h4("Choose Your Colors"),
           p("Select up to 4 colors for exploration and visualization."),
           colourInput("col1", "Color 1:", value = "red"),
-          colourInput("col2", "Color 2:", value = "darkturquoise"),
-          colourInput("col3", "Color 3:", value = "darkgreen"),
-          colourInput("col4", "Color 4:", value = "darkorange"),
-          br(),
-          div(class = "citation-box",
-              tags$strong("For Citations:"),
-              tags$em("Nelli (2023). \"Color Quest: An Interactive Tool for Exploring Color Palettes and Enhancing Visualization Accessibility.\" ",
-                      tags$span("Journal of XXX"), ", XX(X), XXX-XXX."),
-              br(),
-              p(textOutput("counter"))
-          )),
+          colourInput("col2", "Color 2:", value = "yellow"),
+          colourInput("col3", "Color 3:", value = "green"),
+          colourInput("col4", "Color 4:", value = "darkblue"),
+          br()
+          ),
         mainPanel(
           h4("Welcome to Color Quest!"),
           p("This interactive tool, presented in", tags$a(ref="link to publication", "Nelli (2023),"),  "helps you choose perfect colors for visualizations and simulates how they appear to individuals with ", strong("color blindness"), "."),
-          p("Select your preferred colors from the color pickers, and witness the magic of colorful exploration 
-            across various plots. Discover the secret codes of your chosen colors and experience their enchanting 
-            transformation through color-blind friendly visuals. Embrace accessibility and creativity in one 
-            fascinating journey!"),
-          p("Explore the realms of art and data science, where colors weave the tale of your visual journey. The legends of your chosen colors will be revealed below, in all their hexadecimal glory:"),
-          verbatimTextOutput("color_codes"),
+          p("Embrace the power of accessible and creative data visualization with Color Quest. Choose your colors, explore the plots, and gain insights into the world of color harmony and inclusivity."),
+          
+          
+          HTML("
+<ol>
+  <li>Use the color pickers in the left sidebar to select up to four colors. These colors will define your custom palettes and will be used across the app's visualizations.</li>
+  <li>Navigate through the tabs such as 'Scatter Plot,' 'Line Plot,' 'Box Plot,' 'Histogram,' and 'Heatmap.' Each tab offers different visualization types to showcase your chosen colors.</li>
+  <li>Discover how your color choices impact visualizations with the added benefit of simulating how these visuals appear to people with color vision deficiencies.</li>
+  <li>In the <b>'Test your plot'</b> tab, you can submit your own JPG or PNG image. <u>Rest assured that your uploaded images will not be saved on the server, ensuring your security and privacy!</u>
+               The app will then generate color-blindness simulations of the image using your selected colors.</li>
+  <li>Explore the dynamic visualizations to assess the clarity and accessibility of your chosen color palettes for various types of data representations. </li>
+</ol>
+"),
+          
+         
+        # verbatimTextOutput("color_codes"),
           
           tabsetPanel(
             id = "plots_tabset",
@@ -59,8 +79,8 @@ ui <- fluidPage(
                      )
                      
             ),
-          
-      
+            
+            
             tabPanel("Line Plot", 
                      br(),
                      fluidRow(
@@ -74,7 +94,7 @@ ui <- fluidPage(
                      )
                      
             ),
- 
+            
             tabPanel("Box Plot", 
                      br(),
                      fluidRow(
@@ -103,25 +123,56 @@ ui <- fluidPage(
                      br(),
                      column(width = 12, plotOutput("histogram_desaturated", height = "300px"))
                      
+            ),
+            tabPanel("Heatmap", 
+                     br(),
+                     fluidRow(
+                       column(width = 6, plotOutput("heatmap", height = "300px")),
+                       column(width = 6, plotOutput("heatmap_deuteranopia", height = "300px")),
+                       column(width = 6, plotOutput("heatmap_protanopia", height = "300px")),
+                       column(width = 6, plotOutput("heatmap_desaturated", height = "300px"))
+                     )
+                     
+            ),
+            
+            tabPanel(HTML("<b>Test your plot!</b>"),
+                     br(),
+                     p("Upload your image, and see how it appears for individuals with color-blindness"),
+                     fileInput("image_upload", "Browse (jpg or png)"),
+                     br(),
+                     fluidRow(
+                       column(width = 6, plotOutput("uploaded_image_plot", height = "300px")),
+                       column(width = 6, plotOutput("uploaded_image_plot_deuteranopia", height = "300px"))
+                     ),
+                     br(),
+                     fluidRow(
+                       column(width = 6, plotOutput("uploaded_image_plot_protanopia", height = "300px")),
+                       column(width = 6, plotOutput("uploaded_image_plot_desaturated", height = "300px"))
+                     )
             )
             
           ),
-          p("Congratulations! You've embarked on a Color Quest! 
-            The mystical color pickers above hold the key to a world of wonders.
-            Each visualization you encounter is imbued with the essence of your chosen colors! 
-            Marvel at the scatter plot, delve into the histogram, dance with the box plot, 
-            and follow the lines of the line plot, all painted in the vivid hues of your imagination!"),
-          div(class = "legend"),
+         
           
           
           div(class = "contact",
               h3("Contact me:"),
               p("If you have any suggestions, questions, or need assistance, please feel free to write me at",
-                a("luca.nelli@glasgow.ac.uk", href = "mailto:luca.nelli@glasgow.ac.uk"), "."))
+                a("luca.nelli@glasgow.ac.uk", href = "mailto:luca.nelli@glasgow.ac.uk"), ".")),
+       
+        div(class = "citation-box",
+            style = "border: 1px solid #ddd; padding: 10px;",
+            tags$strong("Suggested Citation:"),
+            p("Color-blindness friendly plots were generated using ColorQuest software (Nelli, 2023)"),
+            tags$em("Nelli (2023). \"Color Quest: An Interactive Tool for Exploring Color Palettes and Enhancing Visualization Accessibility.\" ",
+                    tags$span("Journal of XXX"), ", XX(X), XXX-XXX.")
+        )
+        
+        
         )
       )
   )
-      )
+)
 
 
 
@@ -254,7 +305,7 @@ server <- function(input, output) {
   line_plot <- reactive({
     ggplot(data = random_data.L()) +
       geom_ribbon(aes(x = x, ymin = y - runif(1, 0.3, 0.6), ymax = y + runif(1, 0.3, 0.6), fill = col), alpha = 0.4, colour = NA) +
-      geom_line(mapping = aes(x = x, y = y, colour = col), lwd = 1.2) +
+      geom_line(mapping = aes(x = x, y = y, colour = col), linewidth = 1.2) +
       scale_color_manual(values = c(input$col1, input$col2, input$col3, input$col4),
                          labels = c(input$col1, input$col2, input$col3, input$col4)) +
       scale_fill_manual(values = c(input$col1, input$col2, input$col3, input$col4),
@@ -280,13 +331,90 @@ server <- function(input, output) {
   })
   
   
-  # Displaying color codes
-  output$color_codes <- renderText({
-    paste(" Color 1: ", input$col1, "\n",
-          "Color 2: ", input$col2, "\n",
-          "Color 3: ", input$col3, "\n",
-          "Color 4: ", input$col4)
+  
+  
+  
+  # Heatmap
+  
+  
+  smooth_surface <-  reactive({
+    rast(scales::rescale(environ(3 * d, 2000, 10, 0, 1)[rng, rng]))
   })
+  
+  heatmap <- reactive({
+    
+    ggplot() +
+      geom_spatraster(data= smooth_surface()) +
+      scale_fill_gradientn(
+        colors = rev(c(input$col1, input$col2, input$col3, input$col4)),
+        breaks = rev(c(0.01, 0.333, 0.666, 0.99)),
+        labels = rev(c(input$col1, input$col2, input$col3, input$col4)),
+        guide = guide_colorbar(title = "")
+      ) +
+      labs(title = "", x = "", y = "") +
+      theme_minimal()
+    
+  })
+  
+  output$heatmap <- renderPlot({
+    cvdPlot(plot = heatmap(), layout = "origin") 
+  })
+  
+  output$heatmap_deuteranopia <- renderPlot({
+    cvdPlot(plot = heatmap(), layout = "deuteranope") 
+  })
+  
+  output$heatmap_protanopia <- renderPlot({
+    cvdPlot(plot = heatmap(), layout = "protanope") 
+  })
+  
+  output$heatmap_desaturated <- renderPlot({
+    cvdPlot(plot = heatmap(), layout = "desaturate") 
+  })
+  
+  
+  # IMAGE UPLOAD
+  
+  observe({
+    req(input$image_upload)
+    
+    if (grepl("\\.jpg$", input$image_upload$name, ignore.case = TRUE)) {
+      img <- jpeg::readJPEG(input$image_upload$datapath)
+    } else if (grepl("\\.(png|PNG)$", input$image_upload$name)) {
+      img <- png::readPNG(input$image_upload$datapath)
+    } else {
+      return(NULL)  # Unsupported format
+    }
+    
+    img_plot <- rasterGrob(img, interpolate = TRUE)
+    
+    
+    output$uploaded_image_plot <- renderPlot({
+      cvdPlot(plot = img_plot, layout = "origin")
+    })
+    
+    output$uploaded_image_plot_deuteranopia <- renderPlot({
+      cvdPlot(plot = img_plot, layout = "deuteranope")
+    })
+    
+    output$uploaded_image_plot_protanopia <- renderPlot({
+      cvdPlot(plot = img_plot, layout = "protanope")
+    })
+    
+    output$uploaded_image_plot_desaturated <- renderPlot({
+      cvdPlot(plot = img_plot, layout = "desaturate")
+    })
+  })
+ 
+  
+
+  # Displaying color codes
+  # output$color_codes <- renderText({
+  #   paste(" Color 1: ", input$col1, "\n",
+  #         "Color 2: ", input$col2, "\n",
+  #         "Color 3: ", input$col3, "\n",
+  #         "Color 4: ", input$col4)
+  # })
 }
 
 shinyApp(ui = ui, server = server, options = list(name = "Color Finder App"))
