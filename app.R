@@ -1,4 +1,4 @@
-###
+
 library(shiny)
 library(colourpicker)
 library(colorBlindness)
@@ -8,6 +8,8 @@ library(KernSmooth)
 library(tidyterra)
 library(grid)
 library(jpeg)
+library(shinycssloaders)
+
 
 
 environ <- function(d, x, bw, mini, maxi) {
@@ -26,7 +28,7 @@ rng <- (d + 1):(2 * d)
 
 
 ui <- fluidPage(
-  titlePanel("ðŸŒˆ Color Quest"),
+  titlePanel("🌈 Color Quest"),
   h3("Version 1.0"),
   p(textOutput("counter")),
   
@@ -42,7 +44,7 @@ ui <- fluidPage(
           colourInput("col3", "Color 3:", value = "green"),
           colourInput("col4", "Color 4:", value = "darkblue"),
           br()
-          ),
+        ),
         mainPanel(
           h4("Welcome to Color Quest!"),
           p("This interactive tool, presented in", tags$a(ref="link to publication", "Nelli (2023),"),  "helps you choose perfect colors for visualizations and simulates how they appear to individuals with ", strong("color blindness"), "."),
@@ -60,8 +62,8 @@ ui <- fluidPage(
 </ol>
 "),
           
-         
-        # verbatimTextOutput("color_codes"),
+          
+          # verbatimTextOutput("color_codes"),
           
           tabsetPanel(
             id = "plots_tabset",
@@ -69,13 +71,13 @@ ui <- fluidPage(
             tabPanel("Scatter Plot", 
                      br(),
                      fluidRow(
-                       column(width = 6, plotOutput("scatter_plot", height = "300px")),
-                       column(width = 6, plotOutput("scatter_plot_deuteranopia", height = "300px"))
+                       column(width = 6, withSpinner(plotOutput("scatter_plot", height = "300px"))),
+                       column(width = 6, withSpinner(plotOutput("scatter_plot_deuteranopia", height = "300px")))
                      ),
                      br(),
                      fluidRow(
-                       column(width = 6, plotOutput("scatter_plot_protanopia", height = "300px")),
-                       column(width = 6, plotOutput("scatter_plot_desaturated", height = "300px"))
+                       column(width = 6, withSpinner(plotOutput("scatter_plot_protanopia", height = "300px"))),
+                       column(width = 6, withSpinner(plotOutput("scatter_plot_desaturated", height = "300px")))
                      )
                      
             ),
@@ -84,13 +86,13 @@ ui <- fluidPage(
             tabPanel("Line Plot", 
                      br(),
                      fluidRow(
-                       column(width = 6, plotOutput("line_plot", height = "300px")),
-                       column(width = 6, plotOutput("line_plot_deuteranopia", height = "300px"))
+                       column(width = 6, withSpinner(plotOutput("line_plot", height = "300px"))),
+                       column(width = 6, withSpinner(plotOutput("line_plot_deuteranopia", height = "300px")))
                      ),
                      br(),
                      fluidRow(
-                       column(width = 6, plotOutput("line_plot_protanopia", height = "300px")),
-                       column(width = 6, plotOutput("line_plot_desaturated", height = "300px"))
+                       column(width = 6, withSpinner(plotOutput("line_plot_protanopia", height = "300px"))),
+                       column(width = 6, withSpinner(plotOutput("line_plot_desaturated", height = "300px")))
                      )
                      
             ),
@@ -98,13 +100,13 @@ ui <- fluidPage(
             tabPanel("Box Plot", 
                      br(),
                      fluidRow(
-                       column(width = 6, plotOutput("boxplot", height = "300px")),
-                       column(width = 6, plotOutput("boxplot_deuteranopia", height = "300px"))
+                       column(width = 6, withSpinner(plotOutput("boxplot", height = "300px"))),
+                       column(width = 6, withSpinner(plotOutput("boxplot_deuteranopia", height = "300px")))
                      ),
                      br(),
                      fluidRow(
-                       column(width = 6, plotOutput("boxplot_protanopia", height = "300px")),
-                       column(width = 6, plotOutput("boxplot_desaturated", height = "300px"))
+                       column(width = 6, withSpinner(plotOutput("boxplot_protanopia", height = "300px"))),
+                       column(width = 6, withSpinner(plotOutput("boxplot_desaturated", height = "300px")))
                      )
                      
             ),
@@ -112,25 +114,25 @@ ui <- fluidPage(
             
             tabPanel("Histogram", 
                      br(),
-                     column(width = 12, plotOutput("histogram", height = "300px")) ,
+                     column(width = 12, withSpinner(plotOutput("histogram", height = "300px"))) ,
                      br(),
                      br(),
-                     column(width = 12, plotOutput("histogram_deuteranopia", height = "300px")),
+                     column(width = 12, withSpinner(plotOutput("histogram_deuteranopia", height = "300px"))),
                      br(),
                      br(),
-                     column(width = 12, plotOutput("histogram_protanopia", height = "300px")),
+                     column(width = 12, withSpinner(plotOutput("histogram_protanopia", height = "300px"))),
                      br(),
                      br(),
-                     column(width = 12, plotOutput("histogram_desaturated", height = "300px"))
+                     column(width = 12, withSpinner(plotOutput("histogram_desaturated", height = "300px")))
                      
             ),
             tabPanel("Heatmap", 
                      br(),
                      fluidRow(
-                       column(width = 6, plotOutput("heatmap", height = "300px")),
-                       column(width = 6, plotOutput("heatmap_deuteranopia", height = "300px")),
-                       column(width = 6, plotOutput("heatmap_protanopia", height = "300px")),
-                       column(width = 6, plotOutput("heatmap_desaturated", height = "300px"))
+                       column(width = 6, withSpinner(plotOutput("heatmap", height = "300px"))),
+                       column(width = 6, withSpinner(plotOutput("heatmap_deuteranopia", height = "300px"))),
+                       column(width = 6, withSpinner(plotOutput("heatmap_protanopia", height = "300px"))),
+                       column(width = 6, withSpinner(plotOutput("heatmap_desaturated", height = "300px")))
                      )
                      
             ),
@@ -140,35 +142,35 @@ ui <- fluidPage(
                      p("Upload your image, and see how it appears for individuals with color-blindness"),
                      fileInput("image_upload", "Browse (jpg or png)"),
                      br(),
-                     fluidRow(
-                       column(width = 6, plotOutput("uploaded_image_plot", height = "300px")),
-                       column(width = 6, plotOutput("uploaded_image_plot_deuteranopia", height = "300px"))
-                     ),
+                   
+                       column(width = 12, withSpinner(plotOutput("uploaded_image_plot", height = "600px"))),
+                       column(width = 12, withSpinner(plotOutput("uploaded_image_plot_deuteranopia", height = "600px")))
+                     ,
                      br(),
-                     fluidRow(
-                       column(width = 6, plotOutput("uploaded_image_plot_protanopia", height = "300px")),
-                       column(width = 6, plotOutput("uploaded_image_plot_desaturated", height = "300px"))
-                     )
+                    
+                       column(width = 12, withSpinner(plotOutput("uploaded_image_plot_protanopia", height = "600px"))),
+                       column(width = 12, withSpinner(plotOutput("uploaded_image_plot_desaturated", height = "600px")))
+                     
             )
             
           ),
-         
+          
           
           
           div(class = "contact",
               h3("Contact me:"),
               p("If you have any suggestions, questions, or need assistance, please feel free to write me at",
                 a("luca.nelli@glasgow.ac.uk", href = "mailto:luca.nelli@glasgow.ac.uk"), ".")),
-       
-        div(class = "citation-box",
-            style = "border: 1px solid #ddd; padding: 10px;",
-            tags$strong("Suggested Citation:"),
-            p("Color-blindness friendly plots were generated using ColorQuest software (Nelli, 2023)"),
-            tags$em("Nelli (2023). \"Color Quest: An Interactive Tool for Exploring Color Palettes and Enhancing Visualization Accessibility.\" ",
-                    tags$span("Journal of XXX"), ", XX(X), XXX-XXX.")
-        )
-        
-        
+          
+          div(class = "citation-box",
+              style = "border: 1px solid #ddd; padding: 10px;",
+              tags$strong("Suggested Citation:"),
+              p("Color-blindness friendly plots were generated using ColorQuest software (Nelli, 2023)"),
+              tags$em("Nelli (2023). \"Color Quest: An Interactive Tool for Exploring Color Palettes and Enhancing Visualization Accessibility.\" ",
+                      tags$span("Journal of XXX"), ", XX(X), XXX-XXX.")
+          )
+          
+          
         )
       )
   )
@@ -373,9 +375,9 @@ server <- function(input, output) {
   })
   
   
-  # IMAGE UPLOAD
+  # IMAGE UPLOAD 
   
-  observe({
+  uploaded_image_plot_reactive <- reactive({
     req(input$image_upload)
     
     if (grepl("\\.jpg$", input$image_upload$name, ignore.case = TRUE)) {
@@ -388,26 +390,87 @@ server <- function(input, output) {
     
     img_plot <- rasterGrob(img, interpolate = TRUE)
     
-    
-    output$uploaded_image_plot <- renderPlot({
-      cvdPlot(plot = img_plot, layout = "origin")
-    })
-    
-    output$uploaded_image_plot_deuteranopia <- renderPlot({
-      cvdPlot(plot = img_plot, layout = "deuteranope")
-    })
-    
-    output$uploaded_image_plot_protanopia <- renderPlot({
-      cvdPlot(plot = img_plot, layout = "protanope")
-    })
-    
-    output$uploaded_image_plot_desaturated <- renderPlot({
-      cvdPlot(plot = img_plot, layout = "desaturate")
-    })
+    cvdPlot(plot = img_plot, layout = "origin")
   })
- 
   
-
+  output$uploaded_image_plot <- renderPlot({
+    uploaded_image_plot_reactive()
+  })
+  
+  
+  uploaded_image_plot_reactive_deuteranopia <- reactive({
+    req(input$image_upload)
+    
+    if (grepl("\\.jpg$", input$image_upload$name, ignore.case = TRUE)) {
+      img <- jpeg::readJPEG(input$image_upload$datapath)
+    } else if (grepl("\\.(png|PNG)$", input$image_upload$name)) {
+      img <- png::readPNG(input$image_upload$datapath)
+    } else {
+      return(NULL)  # Unsupported format
+    }
+    
+    img_plot <- rasterGrob(img, interpolate = TRUE)
+    
+    cvdPlot(plot = img_plot, layout = "deuteranope")
+  })
+  
+  
+  output$uploaded_image_plot_deuteranopia <- renderPlot({
+    uploaded_image_plot_reactive_deuteranopia()
+  })
+  
+  
+  uploaded_image_plot_reactive_protanopia <- reactive({
+    req(input$image_upload)
+    
+    if (grepl("\\.jpg$", input$image_upload$name, ignore.case = TRUE)) {
+      img <- jpeg::readJPEG(input$image_upload$datapath)
+    } else if (grepl("\\.(png|PNG)$", input$image_upload$name)) {
+      img <- png::readPNG(input$image_upload$datapath)
+    } else {
+      return(NULL)  # Unsupported format
+    }
+    
+    img_plot <- rasterGrob(img, interpolate = TRUE)
+    
+    cvdPlot(plot = img_plot, layout = "protanope")
+  })
+  
+  output$uploaded_image_plot_protanopia <- renderPlot({
+    uploaded_image_plot_reactive_protanopia()
+  })
+  
+  uploaded_image_plot_reactive_desaturated <- reactive({
+    req(input$image_upload)
+    
+    if (grepl("\\.jpg$", input$image_upload$name, ignore.case = TRUE)) {
+      img <- jpeg::readJPEG(input$image_upload$datapath)
+    } else if (grepl("\\.(png|PNG)$", input$image_upload$name)) {
+      img <- png::readPNG(input$image_upload$datapath)
+    } else {
+      return(NULL)  # Unsupported format
+    }
+    
+    img_plot <- rasterGrob(img, interpolate = TRUE)
+    
+    cvdPlot(plot = img_plot, layout = "desaturate")
+  })
+  
+  output$uploaded_image_plot_desaturated <- renderPlot({
+    uploaded_image_plot_reactive_desaturated()
+  })
+  
+  outputOptions(output, "uploaded_image_plot", suspendWhenHidden = FALSE)
+  outputOptions(output, "uploaded_image_plot_deuteranopia", suspendWhenHidden = FALSE)
+  outputOptions(output, "uploaded_image_plot_protanopia", suspendWhenHidden = FALSE)
+  outputOptions(output, "uploaded_image_plot_desaturated", suspendWhenHidden = FALSE)
+  
+  observeEvent(input$image_upload, {
+    shinyjs::enable("uploaded_image_spinner")
+  })
+  
+  
+  
   # Displaying color codes
   # output$color_codes <- renderText({
   #   paste(" Color 1: ", input$col1, "\n",
