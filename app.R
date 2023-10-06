@@ -1,4 +1,5 @@
 
+###
 library(shiny)
 library(colourpicker)
 library(colorBlindness)
@@ -9,7 +10,6 @@ library(tidyterra)
 library(grid)
 library(jpeg)
 library(shinycssloaders)
-
 
 
 environ <- function(d, x, bw, mini, maxi) {
@@ -25,7 +25,6 @@ environ <- function(d, x, bw, mini, maxi) {
 
 d <- max(60, 60)
 rng <- (d + 1):(2 * d)
-
 
 ui <- fluidPage(
   titlePanel("🌈 Color Quest"),
@@ -43,14 +42,21 @@ ui <- fluidPage(
           colourInput("col2", "Color 2:", value = "yellow"),
           colourInput("col3", "Color 3:", value = "green"),
           colourInput("col4", "Color 4:", value = "darkblue"),
-          br()
+          br(),
+          
+          div(class = "citation-box",
+              style = "border: 1px solid #ddd; padding: 10px;",
+              tags$strong("Suggested Citation:"),
+              p("Color-blindness friendly plots were generated using ColorQuest software (Nelli, 2023)"),
+              tags$em("Nelli (2023). \"Color Quest: An Interactive Tool for Exploring Color Palettes and Enhancing Visualization Accessibility.\" ",
+                      tags$span("Journal of XXX"), ", XX(X), XXX-XXX.")
+          )
         ),
+        
         mainPanel(
           h4("Welcome to Color Quest!"),
           p("This interactive tool, presented in", tags$a(ref="link to publication", "Nelli (2023),"),  "helps you choose perfect colors for visualizations and simulates how they appear to individuals with ", strong("color blindness"), "."),
           p("Embrace the power of accessible and creative data visualization with Color Quest. Choose your colors, explore the plots, and gain insights into the world of color harmony and inclusivity."),
-          
-          
           HTML("
 <ol>
   <li>Use the color pickers in the left sidebar to select up to four colors. These colors will define your custom palettes and will be used across the app's visualizations.</li>
@@ -61,10 +67,7 @@ ui <- fluidPage(
   <li>Explore the dynamic visualizations to assess the clarity and accessibility of your chosen color palettes for various types of data representations. </li>
 </ol>
 "),
-          
-          
           # verbatimTextOutput("color_codes"),
-          
           tabsetPanel(
             id = "plots_tabset",
             
@@ -79,9 +82,7 @@ ui <- fluidPage(
                        column(width = 6, withSpinner(plotOutput("scatter_plot_protanopia", height = "300px"))),
                        column(width = 6, withSpinner(plotOutput("scatter_plot_desaturated", height = "300px")))
                      )
-                     
             ),
-            
             
             tabPanel("Line Plot", 
                      br(),
@@ -94,7 +95,6 @@ ui <- fluidPage(
                        column(width = 6, withSpinner(plotOutput("line_plot_protanopia", height = "300px"))),
                        column(width = 6, withSpinner(plotOutput("line_plot_desaturated", height = "300px")))
                      )
-                     
             ),
             
             tabPanel("Box Plot", 
@@ -108,9 +108,7 @@ ui <- fluidPage(
                        column(width = 6, withSpinner(plotOutput("boxplot_protanopia", height = "300px"))),
                        column(width = 6, withSpinner(plotOutput("boxplot_desaturated", height = "300px")))
                      )
-                     
             ),
-            
             
             tabPanel("Histogram", 
                      br(),
@@ -124,7 +122,6 @@ ui <- fluidPage(
                      br(),
                      br(),
                      column(width = 12, withSpinner(plotOutput("histogram_desaturated", height = "300px")))
-                     
             ),
             tabPanel("Heatmap", 
                      br(),
@@ -134,56 +131,38 @@ ui <- fluidPage(
                        column(width = 6, withSpinner(plotOutput("heatmap_protanopia", height = "300px"))),
                        column(width = 6, withSpinner(plotOutput("heatmap_desaturated", height = "300px")))
                      )
-                     
             ),
-            
-            tabPanel(HTML("<b>Test your plot!</b>"),
+            tabPanel(HTML("<b>Test your plot!"),
                      br(),
                      p("Upload your image, and see how it appears for individuals with color-blindness"),
                      fileInput("image_upload", "Browse (jpg or png)"),
                      br(),
-                   
-                       column(width = 12, withSpinner(plotOutput("uploaded_image_plot", height = "600px"))),
-                       column(width = 12, withSpinner(plotOutput("uploaded_image_plot_deuteranopia", height = "600px")))
+                     
+                     column(width = 12, withSpinner(plotOutput("uploaded_image_plot", height = "600px"))),
+                     column(width = 12, withSpinner(plotOutput("uploaded_image_plot_deuteranopia", height = "600px")))
                      ,
                      br(),
-                    
-                       column(width = 12, withSpinner(plotOutput("uploaded_image_plot_protanopia", height = "600px"))),
-                       column(width = 12, withSpinner(plotOutput("uploaded_image_plot_desaturated", height = "600px")))
                      
-            )
-            
-          ),
-          
-          
-          
+                     column(width = 12, withSpinner(plotOutput("uploaded_image_plot_protanopia", height = "600px"))),
+                     column(width = 12, withSpinner(plotOutput("uploaded_image_plot_desaturated", height = "600px")))
+                     
+            )          ),
           div(class = "contact",
               h3("Contact me:"),
-              p("If you have any suggestions, questions, or need assistance, please feel free to write me at",
-                a("luca.nelli@glasgow.ac.uk", href = "mailto:luca.nelli@glasgow.ac.uk"), ".")),
-          
-          div(class = "citation-box",
-              style = "border: 1px solid #ddd; padding: 10px;",
-              tags$strong("Suggested Citation:"),
-              p("Color-blindness friendly plots were generated using ColorQuest software (Nelli, 2023)"),
-              tags$em("Nelli (2023). \"Color Quest: An Interactive Tool for Exploring Color Palettes and Enhancing Visualization Accessibility.\" ",
-                      tags$span("Journal of XXX"), ", XX(X), XXX-XXX.")
-          )
-          
-          
+              actionButton("show_feedback_modal", "Provide Feedback"),
+              p(),
+              h6("If you have any suggestions, questions, or need assistance, please feel free to write me at",
+                 a("luca.nelli@glasgow.ac.uk", href = "mailto:luca.nelli@glasgow.ac.uk"), "."))
         )
       )
   )
 )
-
-
 
 server <- function(input, output) {
   # Render the logo based on the size of the window
   output$logo <- renderUI({
     img(src = "logo.png", height = "auto", width = "100%")  # Logo will resize automatically
   })
-  
   output$counter <- 
     renderText({
       if (!file.exists("counter.Rdata")) 
@@ -194,7 +173,6 @@ server <- function(input, output) {
       save(counter, file="counter.Rdata")     
       paste("You are visitor number: ", counter)
     })
-  
   random_data <- reactive({
     data.frame(
       x = c(rnorm(50, 0.5, 0.1), rnorm(50, 1, 0.2), rnorm(50, 1.5, 0.2), rnorm(50, 2, 0.2)),
@@ -202,39 +180,28 @@ server <- function(input, output) {
       col = c(rep(input$col1, 50),rep(input$col2, 50), rep(input$col3, 50), rep(input$col4, 50))
     )
   })
-  
   # scatter plot
-  
   scatter_plot <- reactive({
     
     ggplot(data = random_data()) +
       geom_point(mapping = aes(x = x, y = y, colour = col), size=1.8) +
       scale_color_identity(guide = "legend",limits = c(input$col1, input$col2, input$col3, input$col4)) +
       labs(color = "")
-    
   })
-  
-  
   output$scatter_plot <- renderPlot({
     cvdPlot(plot = scatter_plot(), layout = "origin") 
   })
-  
   output$scatter_plot_deuteranopia <- renderPlot({
     cvdPlot(plot = scatter_plot(), layout = "deuteranope") 
   })
-  
   output$scatter_plot_protanopia <- renderPlot({
     cvdPlot(plot = scatter_plot(), layout = "protanope") 
   })
-  
   output$scatter_plot_desaturated <- renderPlot({
     cvdPlot(plot = scatter_plot(), layout = "desaturate") 
   })
   
-  
-  
   # histogram
-  
   histogram_plot <- reactive({
     ggplot(data = random_data()) +
       geom_histogram(mapping = aes(x = x, fill = col, color = "black"), position = "dodge", bins = 10) +
@@ -244,54 +211,39 @@ server <- function(input, output) {
       labs(fill = "") +
       facet_wrap(~ col, scales = "free")
   })
-  
-  
   output$histogram <- renderPlot({
     cvdPlot(plot = histogram_plot(), layout = "origin") 
   })
-  
   output$histogram_deuteranopia <- renderPlot({
     cvdPlot(plot = histogram_plot(), layout = "deuteranope") 
   })
-  
   output$histogram_protanopia <- renderPlot({
     cvdPlot(plot = histogram_plot(), layout = "protanope") 
   })
-  
   output$histogram_desaturated <- renderPlot({
     cvdPlot(plot = histogram_plot(), layout = "desaturate") 
   })
   
   # BOXPLOT
-  
   boxplot_plot <- reactive({
     ggplot(data = random_data(), aes(x = col, y = x, fill = col)) +
       geom_boxplot() +
       scale_fill_manual(values = c(input$col1, input$col2, input$col3, input$col4),
                         labels = c(input$col1, input$col2, input$col3, input$col4)) +
       labs(fill = "") 
-    
   })
-  
-  
   output$boxplot <- renderPlot({
     cvdPlot(plot = boxplot_plot(), layout = "origin") 
   })
-  
   output$boxplot_deuteranopia <- renderPlot({
     cvdPlot(plot = boxplot_plot(), layout = "deuteranope") 
   })
-  
   output$boxplot_protanopia <- renderPlot({
     cvdPlot(plot = boxplot_plot(), layout = "protanope") 
   })
-  
   output$boxplot_desaturated <- renderPlot({
     cvdPlot(plot = boxplot_plot(), layout = "desaturate") 
   })
-  
-  
-  
   
   # LINES
   random_data.L <- reactive({
@@ -303,7 +255,6 @@ server <- function(input, output) {
         scale(arima.sim(list(ar = c(0.1)), n = 80))
     )
   })
-  
   line_plot <- reactive({
     ggplot(data = random_data.L()) +
       geom_ribbon(aes(x = x, ymin = y - runif(1, 0.3, 0.6), ymax = y + runif(1, 0.3, 0.6), fill = col), alpha = 0.4, colour = NA) +
@@ -315,36 +266,26 @@ server <- function(input, output) {
       labs(color = "") +
       guides(fill = guide_legend(title = ""))
   })
-  
   output$line_plot <- renderPlot({
     cvdPlot(plot = line_plot(), layout = "origin") 
   })
-  
   output$line_plot_deuteranopia <- renderPlot({
     cvdPlot(plot = line_plot(), layout = "deuteranope") 
   })
-  
   output$line_plot_protanopia <- renderPlot({
     cvdPlot(plot = line_plot(), layout = "protanope") 
   })
-  
   output$line_plot_desaturated <- renderPlot({
     cvdPlot(plot = line_plot(), layout = "desaturate") 
   })
   
-  
-  
-  
-  
   # Heatmap
-  
   
   smooth_surface <-  reactive({
     rast(scales::rescale(environ(3 * d, 2000, 10, 0, 1)[rng, rng]))
   })
   
   heatmap <- reactive({
-    
     ggplot() +
       geom_spatraster(data= smooth_surface()) +
       scale_fill_gradientn(
@@ -355,28 +296,21 @@ server <- function(input, output) {
       ) +
       labs(title = "", x = "", y = "") +
       theme_minimal()
-    
   })
-  
   output$heatmap <- renderPlot({
     cvdPlot(plot = heatmap(), layout = "origin") 
   })
-  
   output$heatmap_deuteranopia <- renderPlot({
     cvdPlot(plot = heatmap(), layout = "deuteranope") 
   })
-  
   output$heatmap_protanopia <- renderPlot({
     cvdPlot(plot = heatmap(), layout = "protanope") 
   })
-  
   output$heatmap_desaturated <- renderPlot({
     cvdPlot(plot = heatmap(), layout = "desaturate") 
   })
   
-  
   # IMAGE UPLOAD 
-  
   uploaded_image_plot_reactive <- reactive({
     req(input$image_upload)
     
@@ -387,20 +321,14 @@ server <- function(input, output) {
     } else {
       return(NULL)  # Unsupported format
     }
-    
     img_plot <- rasterGrob(img, interpolate = TRUE)
-    
     cvdPlot(plot = img_plot, layout = "origin")
   })
-  
   output$uploaded_image_plot <- renderPlot({
     uploaded_image_plot_reactive()
   })
-  
-  
   uploaded_image_plot_reactive_deuteranopia <- reactive({
     req(input$image_upload)
-    
     if (grepl("\\.jpg$", input$image_upload$name, ignore.case = TRUE)) {
       img <- jpeg::readJPEG(input$image_upload$datapath)
     } else if (grepl("\\.(png|PNG)$", input$image_upload$name)) {
@@ -408,18 +336,12 @@ server <- function(input, output) {
     } else {
       return(NULL)  # Unsupported format
     }
-    
     img_plot <- rasterGrob(img, interpolate = TRUE)
-    
     cvdPlot(plot = img_plot, layout = "deuteranope")
   })
-  
-  
   output$uploaded_image_plot_deuteranopia <- renderPlot({
     uploaded_image_plot_reactive_deuteranopia()
   })
-  
-  
   uploaded_image_plot_reactive_protanopia <- reactive({
     req(input$image_upload)
     
@@ -432,17 +354,14 @@ server <- function(input, output) {
     }
     
     img_plot <- rasterGrob(img, interpolate = TRUE)
-    
     cvdPlot(plot = img_plot, layout = "protanope")
   })
-  
   output$uploaded_image_plot_protanopia <- renderPlot({
     uploaded_image_plot_reactive_protanopia()
   })
   
   uploaded_image_plot_reactive_desaturated <- reactive({
     req(input$image_upload)
-    
     if (grepl("\\.jpg$", input$image_upload$name, ignore.case = TRUE)) {
       img <- jpeg::readJPEG(input$image_upload$datapath)
     } else if (grepl("\\.(png|PNG)$", input$image_upload$name)) {
@@ -450,9 +369,7 @@ server <- function(input, output) {
     } else {
       return(NULL)  # Unsupported format
     }
-    
     img_plot <- rasterGrob(img, interpolate = TRUE)
-    
     cvdPlot(plot = img_plot, layout = "desaturate")
   })
   
@@ -469,15 +386,40 @@ server <- function(input, output) {
     shinyjs::enable("uploaded_image_spinner")
   })
   
+  # feedback
+  # When the feedback button is clicked, display the modal
+  observeEvent(input$show_feedback_modal, {
+    showModal(modalDialog(
+      title = "Your Feedback",
+      textAreaInput("feedback_text", "Please share your anonymous feedback.
+                   Help me make Color Quest tool even better:", ""),
+      actionButton("submit_feedback", "Submit")
+    ))
+  })
   
-  
-  # Displaying color codes
-  # output$color_codes <- renderText({
-  #   paste(" Color 1: ", input$col1, "\n",
-  #         "Color 2: ", input$col2, "\n",
-  #         "Color 3: ", input$col3, "\n",
-  #         "Color 4: ", input$col4)
-  # })
+  observeEvent(input$submit_feedback, {
+    
+    feedback <- input$feedback_text
+    
+    # Get the current time in GMT (UK standard time)
+    current_time <- Sys.time()
+    gmt_time <- format(current_time, tz="GMT", "%Y-%m-%d %H:%M:%S")
+    
+    # Prepend the timestamp to the feedback and write to the file
+    feedback_entry <- paste(gmt_time, feedback, sep=": ")
+    cat(feedback_entry, file = "feedback.txt", append = TRUE, sep = "\n\n")
+    
+    # Remove the feedback modal
+    removeModal()
+    
+    # Inform the user that their feedback has been received
+    showModal(modalDialog(
+      title = "Thank you!",
+      "Your feedback has been received.",
+      easyClose = TRUE
+    ))
+    
+  })
 }
 
 shinyApp(ui = ui, server = server, options = list(name = "Color Finder App"))
