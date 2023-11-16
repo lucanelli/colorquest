@@ -1,5 +1,5 @@
 # Contributing to Color Quest
-We welcome contributions from the community and are pleased that you are interested in sharing your ideas and expertise with us. This document provides guidelines and instructions for contributing to Color Quest.
+I welcome contributions from the community and are pleased that you are interested in sharing your ideas and expertise with mw. This document provides guidelines and instructions for contributing to Color Quest.
 
 ## How to Contribute
 ### Reporting Bugs or Issues
